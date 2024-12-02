@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -25,77 +26,52 @@ func abs(a int) int {
 	return a
 }
 
-func sliceIsSortedSet(input *[]int, oneWrong *bool) bool {
-	if len(*input) < 2 {
+func sliceIsSorted(input []int) bool {
+	if len(input) < 2 {
 		return true
 	}
 
 	compareFunc := func(a, b int) bool {
 		return a > b
 	}
-	if (*input)[0] < (*input)[1] {
+	if input[0] < input[1] {
 		compareFunc = func(a, b int) bool {
 			return a < b
 		}
 	}
 
-	for i := 0; i < len((*input))-1; i++ {
-		if !compareFunc((*input)[i], (*input)[i+1]) {
-			if *oneWrong {
-				return false
-			}
-			(*input) = append((*input)[:i], (*input)[i+1:]...)
-			*oneWrong = true
-			return sliceIsSortedSet(input, oneWrong)
-		}
-	}
-	return true
+	return sort.SliceIsSorted(input, func(i, j int) bool {
+		return compareFunc(input[i], input[j])
+	})
 }
 
-func deltasAreSafe(input []int, oneWrong *bool) bool {
+func changesAreSafe(input []int) bool {
 	if len(input) < 2 {
 		return false
 	}
 
 	for i := 1; i < len(input); i++ {
 		delta := abs(input[i-1] - input[i])
-		if delta > 3 {
-			if *oneWrong {
-				return false
-			}
-			*oneWrong = true
-
-			alt1 := make([]int, len(input))
-			copy(alt1, input)
-			alt1 = append(alt1[:i], alt1[i+1:]...)
-			if deltasAreSafe(alt1, oneWrong) {
-				return true
-			}
-
-			alt2 := make([]int, len(input))
-			copy(alt2, input)
-			alt2 = append(alt2[:i-1], alt2[i:]...)
-			if deltasAreSafe(alt2, oneWrong) {
-				return true
-			}
-
-			if i < len(input)-1 {
-				return false
-			}
-
-			alt3 := make([]int, len(input))
-			copy(alt3, input)
-			alt2 = append(alt2[:i+1], alt2[i+2:]...)
-			return deltasAreSafe(alt2, oneWrong)
+		if delta == 0 || delta > 3 {
+			return false
 		}
 	}
 	return true
 }
 
-func isInputSafe(input *[]int) bool {
-	oneWrong := false
-	sorted := sliceIsSortedSet(input, &oneWrong)
-	return sorted && deltasAreSafe(*input, &oneWrong)
+func inputIsSafe(input []int) bool {
+	return sliceIsSorted(input) && changesAreSafe(input)
+}
+
+func bruteForceFix(input []int) bool {
+	for i := 0; i < len(input); i++ {
+		newSlice := append([]int{}, input...)
+		newSlice = append(newSlice[:i], newSlice[i+1:]...)
+		if inputIsSafe(newSlice) {
+			return true
+		}
+	}
+	return false
 }
 
 func main() {
@@ -104,18 +80,23 @@ func main() {
 		panic(err)
 	}
 
-	safeNum := 0
+	var sol1, sol2 int
+
 	in := bufio.NewScanner(file)
 	for in.Scan() {
 		inSlice := stringToIntSlice(in.Text())
 		conclusion := "Unsafe"
-		if isInputSafe(&inSlice) {
+		if inputIsSafe(inSlice) {
 			conclusion = "Safe"
-			safeNum++
+			sol1++
+			sol2++
+		} else if bruteForceFix(inSlice) {
+			conclusion = "Safe after fix"
+			sol2++
 		}
 		fmt.Println(inSlice, conclusion)
 	}
-	fmt.Println(safeNum)
+	fmt.Printf("Solution 1: %d; Solution2: %d\r\n", sol1, sol2)
 
 	return
 }

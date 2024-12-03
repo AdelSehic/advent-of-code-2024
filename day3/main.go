@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"regexp"
+	"strconv"
 	"strings"
 )
 
@@ -18,53 +19,50 @@ func main() {
 
 	var sb strings.Builder
 
+	sb.WriteString("prepend this to fix edge case : do()")
 	for scanner.Scan() {
 		sb.WriteString(scanner.Text())
 	}
 	input := sb.String()
 
-	firstDont := strings.Index(input, "don't()")
-	lastDo := strings.LastIndex(input, "do()")
-	inputBegin := input[:firstDont]
-	inputEnd := input[lastDo:]
+	re := regexp.MustCompile(`mul\((\d+),(\d+)\)`)
 
-	left := "do()"
-	right := "don't()"
-	rx := regexp.MustCompile(`(?s)` + regexp.QuoteMeta(left) + `(.*?)` + regexp.QuoteMeta(right))
-	matches := rx.FindAllStringSubmatch(input, -1)
-
-	extractMul := func(text string) [][2]uint64 {
-		mulRegex := regexp.MustCompile(`mul\((\d+),(\d+)\)`)
-		mulMatches := mulRegex.FindAllStringSubmatch(text, -1)
-
-		results := make([][2]uint64, 0, len(mulMatches))
-		for _, match := range mulMatches {
-			if len(match) == 3 {
-				var num1, num2 uint64
-				fmt.Sscanf(match[1], "%d", &num1)
-				fmt.Sscanf(match[2], "%d", &num2)
-				results = append(results, [2]uint64{num1, num2})
-			}
-		}
-		return results
-	}
-
-	// Collect results from all regions
-	results := extractMul(inputBegin) // From inputBegin
-	for _, match := range matches {   // From all matched substrings
-		results = append(results, extractMul(match[1])...)
-	}
-	results = append(results, extractMul(inputEnd)...) // From inputEnd
-
-	// Sum the results
+	donts := strings.Split(input, "don't()")
 	sum := uint64(0)
-	for _, pair := range results {
-		sum += pair[0] * pair[1]
+	for _, v := range donts {
+		doos := strings.Split(v, "do()")[1:]
+		str := ""
+		for _, a := range doos {
+			str += a
+		}
+		matches := re.FindAllStringSubmatch(str, -1)
+		for _, match := range matches {
+			num1, err1 := strconv.ParseUint(match[1], 10, 64)
+			num2, err2 := strconv.ParseUint(match[2], 10, 64)
+			if err1 != nil || err2 != nil {
+				fmt.Println("Error parsing numbers:", err1, err2)
+				continue
+			}
+			sum += num1 * num2
+		}
 	}
+	fmt.Println(sum)
 
-	// Output the results
-	fmt.Println("Extracted mul pairs:", results)
-	fmt.Println("Sum of all multiplications:", sum)
+	//
+	// sum := uint64(0)
+	// // Extract numbers from matches
+	// results := make([][2]uint64, 0, len(matches))
+	// for _, match := range matches {
+	// 	if len(match) == 3 {
+	// 		var num1, num2 uint64
+	// 		fmt.Sscanf(match[1], "%d", &num1)
+	// 		fmt.Sscanf(match[2], "%d", &num2)
+	// 		results = append(results, [2]uint64{num1, num2})
+	// 		sum += num1 * num2
+	// 	}
+	// }
+	//
+	// fmt.Println(results, sum)
 }
 
 // func main() {

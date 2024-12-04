@@ -66,19 +66,35 @@ func (in *Input) makeAllCoords() []*coord {
 	return crds
 }
 
-func (in *Input) findMAS(start *coord, next func(*coord) *coord) bool {
-	target := []byte{'M', 'A', 'S'}
+func (in *Input) findSequence(start *coord, next func(*coord) *coord, sequence []byte) bool {
 	current := start
 
-	for _, letter := range target {
+	for _, letter := range sequence {
 		current = next(current)
 		if in.getLetter(current) != letter {
 			return false
 		}
-		in.SetDebug(current, rune(letter))
 	}
 
 	return true
+}
+
+func (in *Input) findMAS(start *coord, next func(*coord) *coord) bool {
+	target := []byte{'M', 'A', 'S'}
+	return in.findSequence(start, next, target)
+}
+
+func (in *Input) findAS(start *coord, next func(*coord) *coord) bool {
+	target := []byte{'A', 'S'}
+	if in.findSequence(start, next, target) {
+		in.SetDebug(start, 'M')
+		n := next(start)
+		in.SetDebug(n, 'A')
+		n = next(n)
+		in.SetDebug(n, 'S')
+		return true
+	}
+	return false
 }
 
 func (in *Input) findLetter(input []*coord, letter byte) []*coord {
@@ -86,7 +102,6 @@ func (in *Input) findLetter(input []*coord, letter byte) []*coord {
 	for _, v := range input {
 		if in.getLetter(v) == letter {
 			out = append(out, v)
-			in.SetDebug(v, rune(letter))
 		}
 	}
 	return out
@@ -112,9 +127,40 @@ func (in *Input) xmasCount() int {
 				sum++
 			}
 		}
-		in.PrintDebug()
+		// in.PrintDebug()
 	}
 
+	return sum
+}
+
+func (in *Input) XmasCount() int {
+	directions := []func(*coord) *coord{
+		(*coord).topLeft,
+		(*coord).topRight,
+		(*coord).bottomLeft,
+		(*coord).bottomRight,
+	}
+	sum := 0
+
+	crosses := make(map[coord]int)
+	ms := in.findLetter(in.makeAllCoords(), 'M')
+	for _, m := range ms {
+		for _, move := range directions {
+			if in.findAS(m, move) {
+				A := move(m)
+				crosses[coord{A.y, A.x}]++
+			}
+		}
+	}
+
+	for k, v := range crosses {
+		if v >= 2 {
+			sum++
+			in.SetDebug(&k, '*')
+		}
+	}
+
+	// in.PrintDebug()
 	return sum
 }
 

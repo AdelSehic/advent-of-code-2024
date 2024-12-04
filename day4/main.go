@@ -8,5 +8,6 @@ import (
 func main() {
 	input := &Input{}
 	input.LoadDataWithPadding(os.Args[1])
-	fmt.Println(input.xmasCount())
+	fmt.Println("Part1: ", input.xmasCount())
+	fmt.Println("Part2: ", input.XmasCount())
 }

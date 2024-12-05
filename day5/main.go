@@ -73,7 +73,6 @@ func (page *Page) CheckAndFix(rule map[int]*Rule) bool {
 		for j, v := range left {
 			if rule[page.Sequnce[i]].After[v] {
 				fmt.Printf("Rule violation for %+v ... %d placed after %d, swapping and retrying ...\r\n", page.Sequnce, page.Sequnce[i], v)
-				fmt.Println(page.Sequnce[i], page.Sequnce[j])
 				page.swapElements(i, j)
 				return page.CheckAndFix(rule)
 			}
@@ -81,7 +80,6 @@ func (page *Page) CheckAndFix(rule map[int]*Rule) bool {
 		for j, v := range right {
 			if rule[page.Sequnce[i]].Before[v] {
 				fmt.Printf("Rule violation for %+v ... %d placed before %d, swapping and retrying ...\r\n", page.Sequnce, page.Sequnce[i], v)
-				fmt.Println(page.Sequnce[i], page.Sequnce[i+j+1])
 				page.swapElements(i, i+j+1)
 				return page.CheckAndFix(rule)
 			}

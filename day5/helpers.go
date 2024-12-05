@@ -35,3 +35,22 @@ func splitSlice(slice []int, index int) ([]int, []int) {
 	}
 	return slice[:index], slice[index+1:]
 }
+
+func sliceSwap(slice []int, i, j int) {
+	if i < 0 || i >= len(slice) || j < 0 || j >= len(slice) {
+		panic("index out of bounds")
+	}
+	temp := slice[i]
+	slice[i] = slice[j]
+	slice[j] = temp
+}
+
+func (p *Page) swapElements(i, j int) {
+	temp := p.Sequnce[i]
+	p.Sequnce[i] = p.Sequnce[j]
+	p.Sequnce[j] = temp
+}
+
+func (p *Page) MiddleValue() int {
+	return p.Sequnce[len(p.Sequnce)/2]
+}

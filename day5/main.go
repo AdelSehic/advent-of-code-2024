@@ -67,6 +67,29 @@ func (page *Page) CheckRules(rule map[int]*Rule) bool {
 	return true
 }
 
+func (page *Page) CheckAndFix(rule map[int]*Rule) bool {
+	for i := range page.Sequnce {
+		left, right := splitSlice(page.Sequnce, i)
+		for j, v := range left {
+			if rule[page.Sequnce[i]].After[v] {
+				fmt.Printf("Rule violation for %+v ... %d placed after %d, swapping and retrying ...\r\n", page.Sequnce, page.Sequnce[i], v)
+				fmt.Println(page.Sequnce[i], page.Sequnce[j])
+				page.swapElements(i, j)
+				return page.CheckAndFix(rule)
+			}
+		}
+		for j, v := range right {
+			if rule[page.Sequnce[i]].Before[v] {
+				fmt.Printf("Rule violation for %+v ... %d placed before %d, swapping and retrying ...\r\n", page.Sequnce, page.Sequnce[i], v)
+				fmt.Println(page.Sequnce[i], page.Sequnce[i+j+1])
+				page.swapElements(i, i+j+1)
+				return page.CheckAndFix(rule)
+			}
+		}
+	}
+	return true
+}
+
 func main() {
 	file, err := os.Open(os.Args[1])
 	if err != nil {
@@ -97,8 +120,17 @@ func main() {
 
 	sum := 0
 	for _, v := range properPages {
-		page := in.Pages[v].Sequnce
-		sum += page[len(page)/2]
+		sum += in.Pages[v].MiddleValue()
 	}
+
+	sum2 := 0
+	for _, v := range wrongPages {
+		if in.Pages[v].CheckAndFix(in.Rules) {
+			fmt.Printf("Satisfactory order for %+v\r\n", in.Pages[v].Sequnce)
+			sum2 += in.Pages[v].MiddleValue()
+		}
+	}
+
 	fmt.Println("Sum of the middle of correct pages:", sum)
+	fmt.Println("Sum of the middle of fixed pages:", sum2)
 }

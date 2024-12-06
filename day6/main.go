@@ -2,8 +2,11 @@ package main
 
 import (
 	"fmt"
-	"github.com/AdelSehic/advent-of-code-2024/helpers"
 	"os"
+	"sync"
+	"time"
+
+	"github.com/AdelSehic/advent-of-code-2024/helpers"
 )
 
 func CheckForLoop(g *Guard, bump map[string]bool) bool {
@@ -16,6 +19,7 @@ func CheckForLoop(g *Guard, bump map[string]bool) bool {
 }
 
 func main() {
+	start := time.Now()
 	var field helpers.Field
 
 	field.LoadDataWithPadding(os.Args[1], "|")
@@ -38,6 +42,7 @@ func main() {
 
 	loops := 0
 	alterations := make(map[string]bool, 0)
+	var wg sync.WaitGroup
 	for i := 1; i < len(path); i++ {
 		pos := path[i]
 		if alterations[fmt.Sprintf("%05d%05d", pos.Y, pos.X)] {
@@ -45,24 +50,31 @@ func main() {
 		}
 		alterations[fmt.Sprintf("%05d%05d", pos.Y, pos.X)] = true
 
-		guard.Reset()
-		bumped := make(map[string]bool)
-		newField := field.Copy()
-		newField.SetLetter(pos, '#')
+		wg.Add(1)
+		go func() {
+			g := NewGuard(guard.OriginalPos)
+			bumped := make(map[string]bool)
+			newField := field.Copy()
+			newField.SetLetter(pos, '#')
 
-		for guard.InFront(newField) != '|' {
-			if guard.InFront(newField) == '#' {
-				if CheckForLoop(guard, bumped) {
-					loops++
-					break
+			for g.InFront(newField) != '|' {
+				if g.InFront(newField) == '#' {
+					if CheckForLoop(g, bumped) {
+						loops++
+						break
+					}
+					g.Rotate()
+					continue
 				}
-				guard.Rotate()
-				continue
+				g.Move()
 			}
-			guard.Move()
-		}
+			wg.Done()
+		}()
 	}
+
+	wg.Wait()
 
 	fmt.Printf("Part 1: Guard has visited %d different positions\r\n", len(positions))
 	fmt.Printf("Part 2: Detected %d possible loops\r\n", loops)
+	fmt.Println(time.Since(start))
 }

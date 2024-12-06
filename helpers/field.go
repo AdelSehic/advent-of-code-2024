@@ -101,3 +101,15 @@ func (in *Field) SetLetter(crd *Coord, letter byte) {
     line[crd.X] = letter
     in.Lines[crd.Y] = string(line)
 }
+
+func (f *Field) Copy() *Field {
+    newField := &Field{
+        Width: f.Width,
+        debug: append([]string(nil), f.debug...),
+    }
+
+    newField.Lines = make([]string, len(f.Lines))
+    copy(newField.Lines, f.Lines)
+
+    return newField
+}

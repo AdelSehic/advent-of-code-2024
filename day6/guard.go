@@ -10,17 +10,38 @@ const (
 )
 
 type Guard struct {
-	MoveFunc func(*helpers.Coord) *helpers.Coord
-	Facing   string
-	Positing *helpers.Coord
+	MoveFunc    func(*helpers.Coord) *helpers.Coord
+	Facing      string
+	Position    *helpers.Coord
+	OriginalPos *helpers.Coord
+}
+
+func NewGuard(location *helpers.Coord) *Guard {
+	return &Guard{
+		MoveFunc:    (*helpers.Coord).Up,
+		Position:    location,
+		Facing:      FACING_UP,
+		OriginalPos: location,
+	}
+
+}
+
+func (g *Guard) Reset() {
+	g.Facing = FACING_UP
+	g.MoveFunc = (*helpers.Coord).Up
+	g.Position = g.OriginalPos
+}
+
+func (g *Guard) NextField() *helpers.Coord {
+	return g.MoveFunc(g.Position)
 }
 
 func (g *Guard) InFront(f *helpers.Field) byte {
-	return f.GetLetter(g.MoveFunc(g.Positing))
+	return f.GetLetter(g.NextField())
 }
 
 func (g *Guard) Move() {
-	g.Positing = g.MoveFunc(g.Positing)
+	g.Position = g.NextField()
 }
 
 func (g *Guard) Rotate() {

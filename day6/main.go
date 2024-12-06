@@ -6,32 +6,63 @@ import (
 	"os"
 )
 
+func CheckForLoop(g *Guard, bump map[string]bool) bool {
+	hash := fmt.Sprintf("%05d%05d%s", g.NextField().Y, g.NextField().X, g.Facing)
+	if found := bump[hash]; found {
+		return true
+	}
+	bump[hash] = true
+	return false
+}
+
 func main() {
 	var field helpers.Field
 
 	field.LoadDataWithPadding(os.Args[1], "|")
-	field.PrintData()
-
-	guardPos := field.FindLetter(field.MakeAllCoords(), '^')[0]
-	guard := &Guard{
-		MoveFunc: (*helpers.Coord).Up,
-		Positing: guardPos,
-		Facing:   FACING_UP,
-	}
+	guard := NewGuard(field.FindLetter(field.MakeAllCoords(), '^')[0])
 
 	positions := make(map[helpers.Coord]bool)
-	positions[*guard.Positing] = true
+	positions[*guard.Position] = true
+	path := make([]*helpers.Coord, 0)
 
-	for guard.InFront(&field) != '|' {
-		if guard.InFront(&field) == '#' {
+	newField := field.Copy()
+	for guard.InFront(newField) != '|' {
+		if guard.InFront(newField) == '#' {
 			guard.Rotate()
+			continue
 		}
-		field.SetLetter(guard.Positing, 'X')
 		guard.Move()
-		positions[*guard.Positing] = true
+		path = append(path, guard.Position)
+		positions[*guard.Position] = true
 	}
 
-	field.SetLetter(guard.Positing, 'X')
-	field.PrintData()
-	fmt.Printf("Guard has visited %d different positions\r\n", len(positions))
+	loops := 0
+	alterations := make(map[string]bool, 0)
+	for i := 1; i < len(path); i++ {
+		pos := path[i]
+		if alterations[fmt.Sprintf("%05d%05d", pos.Y, pos.X)] {
+			continue
+		}
+		alterations[fmt.Sprintf("%05d%05d", pos.Y, pos.X)] = true
+
+		guard.Reset()
+		bumped := make(map[string]bool)
+		newField := field.Copy()
+		newField.SetLetter(pos, '#')
+
+		for guard.InFront(newField) != '|' {
+			if guard.InFront(newField) == '#' {
+				if CheckForLoop(guard, bumped) {
+					loops++
+					break
+				}
+				guard.Rotate()
+				continue
+			}
+			guard.Move()
+		}
+	}
+
+	fmt.Printf("Part 1: Guard has visited %d different positions\r\n", len(positions))
+	fmt.Printf("Part 2: Detected %d possible loops\r\n", loops)
 }

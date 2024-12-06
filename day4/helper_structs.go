@@ -1,51 +1,51 @@
 package main
 
-type coord struct {
-	y int
-	x int
+type Coord struct {
+	Y int
+	X int
 }
 
-func (c *coord) right() *coord {
-	return &coord{c.y, c.x + 1}
+func (c *Coord) Right() *Coord {
+	return &Coord{c.Y, c.X + 1}
 }
 
-func (c *coord) left() *coord {
-	return &coord{c.y, c.x - 1}
+func (c *Coord) Left() *Coord {
+	return &Coord{c.Y, c.X - 1}
 }
 
-func (c *coord) up() *coord {
-	return &coord{c.y - 1, c.x}
+func (c *Coord) Up() *Coord {
+	return &Coord{c.Y - 1, c.X}
 }
 
-func (c *coord) down() *coord {
-	return &coord{c.y + 1, c.x}
+func (c *Coord) Down() *Coord {
+	return &Coord{c.Y + 1, c.X}
 }
 
 // Get top-left edge (0, 0)
-func (c *coord) topLeft() *coord {
-	return c.up().left()
+func (c *Coord) TopLeft() *Coord {
+	return c.Up().Left()
 }
 
 // Get top-right edge
-func (c *coord) topRight() *coord {
-	return c.up().right()
+func (c *Coord) TopRight() *Coord {
+	return c.Up().Right()
 }
 
 // Get bottom-left edge
-func (c *coord) bottomLeft() *coord {
-	return c.down().left()
+func (c *Coord) BottomLeft() *Coord {
+	return c.Down().Left()
 }
 
 // Get bottom-right edge
-func (c *coord) bottomRight() *coord {
-	return c.down().right()
+func (c *Coord) BottomRight() *Coord {
+	return c.Down().Right()
 }
 
 // Get all neighbors
-func (c *coord) neighbors() []*coord {
-	return []*coord{
-		c.topLeft(), c.up(), c.topRight(),
-		c.left(), c.right(),
-		c.bottomLeft(), c.down(), c.bottomRight(),
+func (c *Coord) neighbors() []*Coord {
+	return []*Coord{
+		c.TopLeft(), c.Up(), c.TopRight(),
+		c.Left(), c.Right(),
+		c.BottomLeft(), c.Down(), c.BottomRight(),
 	}
 }

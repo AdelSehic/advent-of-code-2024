@@ -1,24 +1,24 @@
 package helpers
 
 type Coord struct {
-	y int
-	x int
+	Y int
+	X int
 }
 
 func (c *Coord) right() *Coord {
-	return &Coord{c.y, c.x + 1}
+	return &Coord{c.Y, c.X + 1}
 }
 
 func (c *Coord) left() *Coord {
-	return &Coord{c.y, c.x - 1}
+	return &Coord{c.Y, c.X - 1}
 }
 
 func (c *Coord) up() *Coord {
-	return &Coord{c.y - 1, c.x}
+	return &Coord{c.Y - 1, c.X}
 }
 
 func (c *Coord) down() *Coord {
-	return &Coord{c.y + 1, c.x}
+	return &Coord{c.Y + 1, c.X}
 }
 
 // Get top-left edge (0, 0)

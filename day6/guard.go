@@ -23,7 +23,15 @@ func NewGuard(location *helpers.Coord) *Guard {
 		Facing:      FACING_UP,
 		OriginalPos: location,
 	}
+}
 
+func (g *Guard) Copy() *Guard {
+	return &Guard{
+		MoveFunc:    g.MoveFunc,
+		Position:    g.Position,
+		Facing:      g.Facing,
+		OriginalPos: g.OriginalPos,
+	}
 }
 
 func (g *Guard) Reset() {

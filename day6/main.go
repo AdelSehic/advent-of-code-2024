@@ -27,7 +27,7 @@ func main() {
 
 	positions := make(map[helpers.Coord]bool)
 	positions[*guard.Position] = true
-	path := make([]*helpers.Coord, 0)
+	path := make([]*Guard, 0)
 
 	newField := field.Copy()
 	for guard.InFront(newField) != '|' {
@@ -36,7 +36,7 @@ func main() {
 			continue
 		}
 		guard.Move()
-		path = append(path, guard.Position)
+		path = append(path, guard.Copy())
 		positions[*guard.Position] = true
 	}
 
@@ -44,7 +44,7 @@ func main() {
 	alterations := make(map[string]bool, 0)
 	var wg sync.WaitGroup
 	for i := 1; i < len(path); i++ {
-		pos := path[i]
+		pos := path[i].Position
 		if alterations[fmt.Sprintf("%05d%05d", pos.Y, pos.X)] {
 			continue
 		}
@@ -52,7 +52,7 @@ func main() {
 
 		wg.Add(1)
 		go func() {
-			g := NewGuard(guard.OriginalPos)
+			g := path[i-1]
 			bumped := make(map[string]bool)
 			newField := field.Copy()
 			newField.SetLetter(pos, '#')

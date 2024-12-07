@@ -6,15 +6,17 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"sync"
 )
 
 type Input struct {
 	Lines []*Line
+	WG    *sync.WaitGroup
 }
 
 type Line struct {
-	Target int
-	Values []int
+	Target uint64
+	Values []uint64
 }
 
 func LoadInput(infile string) *Input {
@@ -32,24 +34,26 @@ func LoadInput(infile string) *Input {
 		input.Lines = append(input.Lines, MakeLine(scanner.Text()))
 	}
 
+	input.WG = &sync.WaitGroup{}
+
 	return input
 }
 
 func MakeLine(scanned string) *Line {
 	in := &Line{
-		Values: make([]int, 0),
+		Values: make([]uint64, 0),
 	}
 
 	line := strings.Split(scanned, " ")
 	line[0] = strings.TrimRight(line[0], ":")
 
-	num, err := strconv.Atoi(line[0])
+	num, err := strconv.ParseUint(line[0], 10, 64)
 	if err != nil {
 		panic(err)
 	}
 	in.Target = num
 	for i := 1; i < len(line); i++ {
-		num, err := strconv.Atoi(line[i])
+		num, err := strconv.ParseUint(line[i], 10, 64)
 		if err != nil {
 			panic(err)
 		}

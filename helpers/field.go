@@ -44,6 +44,10 @@ func (in *Field) PrintDebug() {
 	fmt.Println("----------------------------------------------")
 }
 
+func (in *Field) WithinBounds(crd *Coord) bool {
+	return crd.X > 0 && crd.X < len(in.Lines)-1 && crd.Y > 0 && crd.Y < in.Width-1
+}
+
 func (in *Field) SetDebug(crd *Coord, letter rune) {
 	row := []rune(in.debug[crd.Y]) // Convert the string to a slice of runes
 	row[crd.X] = letter            // Modify the specific position
@@ -97,6 +101,9 @@ func (in *Field) GetLetter(crd *Coord) byte {
 }
 
 func (in *Field) SetLetter(crd *Coord, letter byte) {
+	if !in.WithinBounds(crd) {
+		return
+	}
 	line := []byte(in.Lines[crd.Y])
 	line[crd.X] = letter
 	in.Lines[crd.Y] = string(line)

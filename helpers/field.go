@@ -97,19 +97,36 @@ func (in *Field) GetLetter(crd *Coord) byte {
 }
 
 func (in *Field) SetLetter(crd *Coord, letter byte) {
-    line := []byte(in.Lines[crd.Y])
-    line[crd.X] = letter
-    in.Lines[crd.Y] = string(line)
+	line := []byte(in.Lines[crd.Y])
+	line[crd.X] = letter
+	in.Lines[crd.Y] = string(line)
 }
 
 func (f *Field) Copy() *Field {
-    newField := &Field{
-        Width: f.Width,
-        debug: append([]string(nil), f.debug...),
-    }
+	newField := &Field{
+		Width: f.Width,
+		debug: append([]string(nil), f.debug...),
+	}
 
-    newField.Lines = make([]string, len(f.Lines))
-    copy(newField.Lines, f.Lines)
+	newField.Lines = make([]string, len(f.Lines))
+	copy(newField.Lines, f.Lines)
 
-    return newField
+	return newField
+}
+
+func (f *Field) ValuePlaces(exclude ...byte) map[byte][]*Coord {
+	excluded := make(map[byte]bool)
+	for _, l := range exclude {
+		excluded[l] = true
+	}
+
+	locations := make(map[byte][]*Coord)
+	for _, coord := range f.MakeAllCoords() {
+		letter := f.GetLetter(coord)
+		if excluded[letter] {
+			continue
+		}
+		locations[letter] = append(locations[letter], coord)
+	}
+	return locations
 }

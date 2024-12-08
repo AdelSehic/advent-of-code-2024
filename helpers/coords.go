@@ -44,3 +44,9 @@ func (c *Coord) neighbors() []*Coord {
 		c.BottomLeft(), c.Down(), c.BottomRight(),
 	}
 }
+
+func (c *Coord) Distance(other *Coord) (int, int) {
+	a := c.X - other.X
+	b := c.Y - other.Y
+	return a, b
+}

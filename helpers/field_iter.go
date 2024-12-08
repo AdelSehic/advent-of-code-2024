@@ -67,3 +67,11 @@ func (g *FieldIterator) Rotate() {
 	}
 }
 
+func NewMoveFunc(x, y int) func(*Coord) *Coord {
+	return func(crd *Coord) *Coord {
+		return &Coord{
+			X: crd.X + x,
+			Y: crd.Y + y,
+		}
+	}
+}

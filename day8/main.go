@@ -7,7 +7,7 @@ import (
 	"github.com/AdelSehic/advent-of-code-2024/helpers"
 )
 
-func FrequencyPlaces(coordinates []*helpers.Coord) []*helpers.Coord {
+func FrequencyPlacesPart1(coordinates []*helpers.Coord) []*helpers.Coord {
 	frequencies := make([]*helpers.Coord, 0)
 	for i := 0; i < len(coordinates); i++ {
 		for j := i + 1; j < len(coordinates); j++ {
@@ -17,6 +17,26 @@ func FrequencyPlaces(coordinates []*helpers.Coord) []*helpers.Coord {
 		}
 	}
 	return frequencies
+}
+
+func FrequencyPlacesPart2(coordinates []*helpers.Coord) []*helpers.FieldIterator {
+	iters := make([]*helpers.FieldIterator, 0)
+	for i := 0; i < len(coordinates); i++ {
+		for j := i + 1; j < len(coordinates); j++ {
+			x1, y1 := coordinates[i].Distance(coordinates[j])
+			iter1 := helpers.NewFieldIterator(coordinates[i])
+			iter1.MoveFunc = helpers.NewMoveFunc(x1, y1)
+			iters = append(iters, iter1)
+			// fmt.Printf("New iterator at %+v, move func %d %d\r\n", iter1.Position, x1, y1)
+
+			x2, y2 := coordinates[j].Distance(coordinates[i])
+			iter2 := helpers.NewFieldIterator(coordinates[j])
+			iter2.MoveFunc = helpers.NewMoveFunc(x2, y2)
+			iters = append(iters, iter2)
+			// fmt.Printf("New iterator at %+v, move func %d %d\r\n", iter2.Position, x2, y2)
+		}
+	}
+	return iters
 }
 
 func FrequencyPlace(first, second *helpers.Coord) (*helpers.Coord, *helpers.Coord) {
@@ -39,7 +59,7 @@ func main() {
 
 	uniqueFreqs := make(map[helpers.Coord]bool)
 	for _, coordinates := range input.ValuePlaces('.') {
-		frequencies := FrequencyPlaces(coordinates)
+		frequencies := FrequencyPlacesPart1(coordinates)
 		for _, freq := range frequencies {
 			if input.WithinBounds(freq) {
 				uniqueFreqs[*freq] = true
@@ -48,6 +68,21 @@ func main() {
 		}
 	}
 
-	fmt.Println(len(uniqueFreqs))
+	part2 := make(map[helpers.Coord]bool)
+	for _, coordinates := range input.ValuePlaces('.') {
+		frequencies := FrequencyPlacesPart2(coordinates)
+		for _, iter := range frequencies {
+			for input.WithinBounds(iter.Position) {
+				part2[*iter.Position] = true
+				if input.GetLetter(iter.Position) == '.' {
+					input.SetLetter(iter.Position, '#')
+				}
+				iter.Move()
+			}
+		}
+	}
+
 	input.PrintData()
+	// fmt.Println(len(part1))
+	fmt.Println(len(part2))
 }

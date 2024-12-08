@@ -7,19 +7,7 @@ import (
 	"github.com/AdelSehic/advent-of-code-2024/helpers"
 )
 
-func FrequencyPlacesPart1(coordinates []*helpers.Coord) []*helpers.Coord {
-	frequencies := make([]*helpers.Coord, 0)
-	for i := 0; i < len(coordinates); i++ {
-		for j := i + 1; j < len(coordinates); j++ {
-			freq1, freq2 := FrequencyPlace(coordinates[i], coordinates[j])
-			frequencies = append(frequencies, freq1)
-			frequencies = append(frequencies, freq2)
-		}
-	}
-	return frequencies
-}
-
-func FrequencyPlacesPart2(coordinates []*helpers.Coord) []*helpers.FieldIterator {
+func FrequencyPlaces(coordinates []*helpers.Coord) []*helpers.FieldIterator {
 	iters := make([]*helpers.FieldIterator, 0)
 	for i := 0; i < len(coordinates); i++ {
 		for j := i + 1; j < len(coordinates); j++ {
@@ -57,20 +45,24 @@ func main() {
 	input := &helpers.Field{}
 	input.LoadDataWithPadding(os.Args[1], "+")
 
-	uniqueFreqs := make(map[helpers.Coord]bool)
+	part1Output := input.Copy()
+	part1 := make(map[helpers.Coord]bool)
 	for _, coordinates := range input.ValuePlaces('.') {
-		frequencies := FrequencyPlacesPart1(coordinates)
-		for _, freq := range frequencies {
-			if input.WithinBounds(freq) {
-				uniqueFreqs[*freq] = true
-				input.SetLetter(freq, '#')
+		frequencies := FrequencyPlaces(coordinates)
+		for _, iter := range frequencies {
+			iter.Move()
+			if input.WithinBounds(iter.Position) {
+				part1[*iter.Position] = true
+				part1Output.SetLetter(iter.Position, '#')
 			}
 		}
 	}
+	fmt.Println("Part1 field:")
+	part1Output.PrintData()
 
 	part2 := make(map[helpers.Coord]bool)
 	for _, coordinates := range input.ValuePlaces('.') {
-		frequencies := FrequencyPlacesPart2(coordinates)
+		frequencies := FrequencyPlaces(coordinates)
 		for _, iter := range frequencies {
 			for input.WithinBounds(iter.Position) {
 				part2[*iter.Position] = true
@@ -81,8 +73,11 @@ func main() {
 			}
 		}
 	}
-
+	fmt.Println()
+	fmt.Println("Part2 field:")
 	input.PrintData()
-	// fmt.Println(len(part1))
-	fmt.Println(len(part2))
+
+	fmt.Println()
+	fmt.Println("Part1 solution : ", len(part1))
+	fmt.Println("Part2 solution : " , len(part2))
 }

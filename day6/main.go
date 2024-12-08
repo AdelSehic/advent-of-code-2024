@@ -9,7 +9,7 @@ import (
 	"github.com/AdelSehic/advent-of-code-2024/helpers"
 )
 
-func CheckForLoop(g *Guard, bump map[string]bool) bool {
+func CheckForLoop(g *helpers.FieldIterator, bump map[string]bool) bool {
 	hash := fmt.Sprintf("%05d%05d%s", g.NextField().Y, g.NextField().X, g.Facing)
 	if found := bump[hash]; found {
 		return true
@@ -23,11 +23,11 @@ func main() {
 	var field helpers.Field
 
 	field.LoadDataWithPadding(os.Args[1], "|")
-	guard := NewGuard(field.FindLetter(field.MakeAllCoords(), '^')[0])
+	guard := helpers.NewFieldIterator(field.FindLetter(field.MakeAllCoords(), '^')[0])
 
 	positions := make(map[helpers.Coord]bool)
 	positions[*guard.Position] = true
-	path := make([]*Guard, 0)
+	path := make([]*helpers.FieldIterator, 0)
 
 	newField := field.Copy()
 	for guard.InFront(newField) != '|' {

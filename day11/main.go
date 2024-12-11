@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"sync"
 	"time"
 	// "os"
 )
@@ -18,7 +19,6 @@ func RecursiveEvolve(number uint64, exit, iteration int) uint64 {
 	if iteration >= exit {
 		return 1
 	}
-	fmt.Println(iteration)
 
 	if number == 0 {
 		return RecursiveEvolve(1, exit, iteration+1)
@@ -48,9 +48,15 @@ func main() {
 	start := time.Now()
 	sum := 0
 	input, exit := MakeInput(os.Args[1])
+	var wg sync.WaitGroup
 	for _, v := range input {
-		sum += int(RecursiveEvolve(v, exit, 0))
+		wg.Add(1)
+		go func() {
+			sum += int(RecursiveEvolve(v, exit, 0))
+			wg.Done()
+		}()
 	}
+	wg.Wait()
 	fmt.Println(sum, time.Since(start))
 }
 

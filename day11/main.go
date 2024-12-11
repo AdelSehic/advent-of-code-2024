@@ -15,13 +15,30 @@ const (
 	TEST2  = "test2"
 )
 
+type Cached struct {
+	Number     uint64
+	Iterations int
+}
+
+var cache = make(map[Cached]uint64)
+
 func RecursiveEvolve(number uint64, exit, iteration int) uint64 {
 	if iteration >= exit {
 		return 1
 	}
 
+	cacheEntry := Cached{
+		Number:     number,
+		Iterations: exit - iteration,
+	}
+
+	if _, found := cache[cacheEntry]; found {
+		return cache[cacheEntry]
+	}
+
 	if number == 0 {
-		return RecursiveEvolve(1, exit, iteration+1)
+		cache[cacheEntry] = RecursiveEvolve(1, exit, iteration+1)
+		return cache[cacheEntry]
 	}
 
 	digits := []uint64{}
@@ -39,9 +56,11 @@ func RecursiveEvolve(number uint64, exit, iteration int) uint64 {
 			left = left*10 + digits[i]
 			right = right*10 + digits[mid+i]
 		}
-		return RecursiveEvolve(left, exit, iteration+1) + RecursiveEvolve(right, exit, iteration+1)
+		cache[cacheEntry] = RecursiveEvolve(left, exit, iteration+1) + RecursiveEvolve(right, exit, iteration+1)
+		return cache[cacheEntry]
 	}
-	return RecursiveEvolve(number*2024, exit, iteration+1)
+	cache[cacheEntry] = RecursiveEvolve(number*2024, exit, iteration+1)
+	return cache[cacheEntry]
 }
 
 func main() {
@@ -51,10 +70,10 @@ func main() {
 	var wg sync.WaitGroup
 	for _, v := range input {
 		wg.Add(1)
-		go func() {
-			sum += int(RecursiveEvolve(v, exit, 0))
-			wg.Done()
-		}()
+		// go func() {
+		sum += int(RecursiveEvolve(v, exit, 0))
+		wg.Done()
+		// }()
 	}
 	wg.Wait()
 	fmt.Println(sum, time.Since(start))

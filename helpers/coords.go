@@ -37,7 +37,7 @@ func (c *Coord) BottomRight() *Coord {
 	return c.Down().Right()
 }
 
-func (c *Coord) neighbors() []*Coord {
+func (c *Coord) Neighbors() []*Coord {
 	return []*Coord{
 		c.TopLeft(), c.Up(), c.TopRight(),
 		c.Left(), c.Right(),

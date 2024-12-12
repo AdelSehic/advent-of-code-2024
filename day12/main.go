@@ -7,6 +7,17 @@ import (
 	"github.com/AdelSehic/advent-of-code-2024/helpers"
 )
 
+var Directions = []string{
+	"topleft",
+	"up",
+	"topright",
+	"left",
+	"right",
+	"bottomleft",
+	"down",
+	"bottomright",
+}
+
 type Plot struct {
 	Input  *helpers.Field
 	Places []*helpers.Coord
@@ -95,4 +106,45 @@ func main() {
 		}
 	}
 	fmt.Println("Part1 :", part1)
+
+	original := input.Copy()
+
+	for letter, v := range plots {
+		for _, p := range v {
+			for _, k := range p.Places {
+				input.SetLetter(k, byte(CornerState(letter, k, original)+48))
+			}
+		}
+	}
+
+	input.PrintData()
+	original.PrintData()
+}
+
+func CornerState(letter byte, coord *helpers.Coord, input *helpers.Field) int {
+	neighCount := 0
+	neighbors := coord.Neighbors()
+	letters := make(map[string]byte)
+	for i := 0; i < len(neighbors); i++ {
+		letters[Directions[i]] = input.GetLetter(neighbors[i])
+	}
+
+	for _, c := range letters {
+		if c != letter {
+			neighCount++
+		}
+	}
+
+	switch neighCount {
+	case 8:
+		return 4
+	case 7:
+		return 2
+	}
+
+	if (letters["up"] == letter && letters["down"] == letter) || (letters["left"] == letter && letters["right"] == letter) {
+		return 0
+	}
+
+	return 0
 }

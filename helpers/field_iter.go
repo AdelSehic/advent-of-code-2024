@@ -67,6 +67,23 @@ func (g *FieldIterator) Rotate() {
 	}
 }
 
+func (g *FieldIterator) RotateOther() {
+	switch g.Facing {
+	case FACING_UP:
+		g.MoveFunc = (*Coord).Left
+		g.Facing = FACING_LEFT
+	case FACING_RIGHT:
+		g.MoveFunc = (*Coord).Up
+		g.Facing = FACING_UP
+	case FACING_DOWN:
+		g.MoveFunc = (*Coord).Right
+		g.Facing = FACING_RIGHT
+	case FACING_LEFT:
+		g.MoveFunc = (*Coord).Down
+		g.Facing = FACING_DOWN
+	}
+}
+
 func NewMoveFunc(x, y int) func(*Coord) *Coord {
 	return func(crd *Coord) *Coord {
 		return &Coord{

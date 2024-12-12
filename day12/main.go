@@ -22,6 +22,7 @@ type Plot struct {
 	Input  *helpers.Field
 	Places []*helpers.Coord
 	Fences uint64
+	Sides  int
 }
 
 func (p *Plot) PrintPlot() {
@@ -112,8 +113,11 @@ func main() {
 	for letter, v := range plots {
 		for _, p := range v {
 			for _, k := range p.Places {
-				input.SetLetter(k, byte(CornerState(letter, k, original)+48))
+				num := CornerState(letter, k, original)
+				input.SetLetter(k, byte(num+48))
+				p.Sides += num
 			}
+			fmt.Println(string(letter), p.Sides)
 		}
 	}
 
@@ -142,9 +146,11 @@ func CornerState(letter byte, coord *helpers.Coord, input *helpers.Field) int {
 		return 2
 	}
 
-	if (letters["up"] == letter && letters["down"] == letter) || (letters["left"] == letter && letters["right"] == letter) {
+	if (letters["up"] == letter && letters["down"] == letter) ||
+		(letters["left"] == letter && letters["right"] == letter) {
 		return 0
 	}
+
 
 	return 0
 }

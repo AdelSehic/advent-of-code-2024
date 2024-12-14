@@ -36,6 +36,15 @@ func (in *Field) LoadDataWithPadding(infile string, paddingChar string) {
 	}
 }
 
+func GenerateEmptyField(height, widht int, character byte) *Field {
+	f := &Field{}
+	for i := 0; i < height; i++ {
+		f.Lines = append(f.Lines, strings.Repeat(string(character), widht))
+	}
+	f.Width = widht
+	return f
+}
+
 func (in *Field) PrintDebug() {
 	fmt.Println("----------------------------------------------")
 	for _, v := range in.debug {
@@ -45,7 +54,7 @@ func (in *Field) PrintDebug() {
 }
 
 func (in *Field) WithinBounds(crd *Coord) bool {
-	return crd.X > 0 && crd.X < len(in.Lines)-1 && crd.Y > 0 && crd.Y < in.Width-1
+	return crd.X > 0 && crd.X < in.Width-1 && crd.Y > 0 && crd.Y < len(in.Lines)-1
 }
 
 func (in *Field) SetDebug(crd *Coord, letter rune) {
@@ -109,6 +118,39 @@ func (in *Field) SetLetter(crd *Coord, letter byte) {
 	in.Lines[crd.Y] = string(line)
 }
 
+func (in *Field) SetLetterUnpadded(crd *Coord, letter byte) {
+	line := []byte(in.Lines[crd.Y])
+	line[crd.X] = letter
+	in.Lines[crd.Y] = string(line)
+}
+
+func (in *Field) SplitVertically() (*Field, *Field) {
+	left, right := &Field{}, &Field{}
+
+	half := in.Width / 2
+	for _, line := range in.Lines {
+		l, r := line[:half+in.Width%2], line[half+in.Width%2:]
+		left.Lines = append(left.Lines, l)
+		right.Lines = append(right.Lines, r)
+	}
+	left.Width = half
+	right.Width = half
+
+	return left, right
+}
+
+func (in *Field) SplitHorizontally() (*Field, *Field) {
+	top, bottom := &Field{}, &Field{}
+
+	height := len(in.Lines)
+	half := height / 2
+	top.Lines, bottom.Lines = in.Lines[:half+height%2], in.Lines[half+height%2:]
+	top.Width = in.Width
+	bottom.Width = in.Width
+
+	return top, bottom
+}
+
 func (f *Field) Copy() *Field {
 	newField := &Field{
 		Width: f.Width,
@@ -136,4 +178,13 @@ func (f *Field) ValuePlaces(exclude ...byte) map[byte][]*Coord {
 		locations[letter] = append(locations[letter], coord)
 	}
 	return locations
+}
+
+func (in *Field) Contract(top, bottom, left, right int) {
+	in.Lines = in.Lines[top : len(in.Lines)-bottom]
+
+	for i := 0; i < len(in.Lines); i++ {
+		line := in.Lines[i]
+		in.Lines[i] = line[left : len(in.Lines[i])-right]
+	}
 }

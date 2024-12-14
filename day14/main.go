@@ -4,22 +4,23 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"os/exec"
+	// "time"
 
 	"github.com/AdelSehic/advent-of-code-2024/helpers"
-	"github.com/nsf/termbox-go"
 )
 
 const (
-	HEIGHT       = 7
-	WIDHT        = 11
-	FIELD_LETTER = '.'
-	ROBOT_LETTER = '^'
+	HEIGHT       = 103
+	WIDTH        = 101
+	FIELD_LETTER = ' '
+	ROBOT_LETTER = '#'
 )
 
 func RobotMoveFunc(x, y int) func(*helpers.Coord) *helpers.Coord {
 	return func(crd *helpers.Coord) *helpers.Coord {
 		return &helpers.Coord{
-			X: (crd.X + x + WIDHT) % WIDHT,
+			X: (crd.X + x + WIDTH) % WIDTH,
 			Y: (crd.Y + y + HEIGHT) % HEIGHT,
 		}
 	}
@@ -45,50 +46,60 @@ func MakeRobots(infile string) []*helpers.FieldIterator {
 }
 
 func main() {
-
-	// err := termbox.Init()
-	// if err != nil {
-	// 	panic(err)
-	// }
-	// defer termbox.Close()
-
-	field := helpers.GenerateEmptyField(HEIGHT, WIDHT, FIELD_LETTER)
-
-	robot := helpers.NewFieldIterator(&helpers.Coord{X: 5, Y: 4})
-	robot.MoveFunc = RobotMoveFunc(1, -1)
-
 	robots := MakeRobots(os.Args[1])
 	for i := 0; i < 100; i++ {
 		for _, robot := range robots {
-			// field.SetLetterUnpadded(robot.Position, ROBOT_LETTER)
 			robot.Move()
 		}
 	}
 
 	positions := make(map[helpers.Coord]int)
+	coordinateCount := make(map[int]int)
 	for _, robot := range robots {
 		positions[*robot.Position]++
-		field.SetLetterUnpadded(robot.Position, byte(positions[*robot.Position]+48))
+		coordinateCount[DetermineQuadrant(robot)]++
 	}
+	delete(coordinateCount, 0)
 
-	topl, topr, bottoml, bottomr := GetQuadrants(field)
+	fmt.Println("Part1: ", coordinateCount[1]*coordinateCount[2]*coordinateCount[3]*coordinateCount[4])
 
-	// for i := 0; i < 100; i++ {
-	// termbox.Clear(termbox.ColorBlue, termbox.ColorDefault)
-	// drawGrid()
-	// drawRobot(robot.Position)
-	// termbox.Flush()
-	// time.Sleep(200 * time.Millisecond)
-	// robot.Move()
-	// 	field.SetLetterUnpadded(robot.Position, ROBOT_LETTER)
-	// 	field.PrintData()
-	// 	time.Sleep(time.Millisecond * 500)
-	// 	field.SetLetterUnpadded(robot.Position, FIELD_LETTER)
-	// 	robot.Move()
-	// 	fmt.Println(robot.Position)
-	// }
+	for i := 0; true; i++ {
+		emptyField := helpers.GenerateEmptyField(HEIGHT, WIDTH, FIELD_LETTER)
+		cmd := exec.Command("clear")
+		cmd.Stdout = os.Stdout
+		cmd.Run()
+		pos := make(map[helpers.Coord]bool)
+		for _, robot := range robots {
+			robot.Move()
+			pos[*robot.Position] = true
+			emptyField.SetLetterUnpadded(robot.Position, ROBOT_LETTER)
+		}
+		if len(pos) == len(robots) {
+			emptyField.PrintData()
+			fmt.Println("Part2 solution : ", i+101)
+			break
+		}
+		// time.Sleep(250 * time.Millisecond)
+	}
+}
 
-	// field.PrintData()
+func DetermineQuadrant(it *helpers.FieldIterator) int {
+	midX := WIDTH / 2
+	midY := HEIGHT / 2
+
+	// Check if the point is on the axis (midline)
+	if it.Position.X == midX || it.Position.Y == midY {
+		return 0 // Indicate it's on the midline and doesn't belong to a quadrant
+	}
+	if it.Position.X < midX && it.Position.Y < midY {
+		return 1 // Top-left
+	} else if it.Position.X > midX && it.Position.Y < midY {
+		return 2 // Top-right
+	} else if it.Position.X < midX && it.Position.Y > midY {
+		return 3 // Bottom-left
+	} else {
+		return 4 // Bottom-right
+	}
 }
 
 func GetQuadrants(field *helpers.Field) (*helpers.Field, *helpers.Field, *helpers.Field, *helpers.Field) {
@@ -102,16 +113,4 @@ func GetQuadrants(field *helpers.Field) (*helpers.Field, *helpers.Field, *helper
 	bottoml.Contract(0, 0, 0, 1)
 
 	return topl, topr, bottoml, bottomr
-}
-
-func drawRobot(coord *helpers.Coord) {
-	termbox.SetCell(coord.X, coord.Y, '@', termbox.ColorGreen, termbox.ColorDefault)
-}
-
-func drawGrid() {
-	for y := 0; y < HEIGHT; y++ {
-		for x := 0; x < WIDHT; x++ {
-			termbox.SetCell(x, y, '.', termbox.ColorWhite, termbox.ColorDefault)
-		}
-	}
 }

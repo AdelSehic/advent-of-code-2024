@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/AdelSehic/advent-of-code-2024/helpers"
+	"github.com/eiannone/keyboard"
 )
 
 func Move(startPos *helpers.Coord, field *helpers.Field, direction byte) *helpers.Coord {
@@ -49,7 +50,7 @@ func dfWallSearch(position *helpers.Coord, field *helpers.Field, direction byte,
 	case "]^", "]v":
 		halfBox = next.Left()
 	}
-	return dfWallSearch(halfBox, field, direction, moveFunc) || dfWallSearch(halfBox, field, direction, moveFunc)
+	return dfWallSearch(next, field, direction, moveFunc) || dfWallSearch(halfBox, field, direction, moveFunc)
 }
 
 func moveHelper(position *helpers.Coord, field *helpers.Field, direction byte, moveFunc func(*helpers.Coord) *helpers.Coord) bool {
@@ -79,6 +80,10 @@ func moveHelper(position *helpers.Coord, field *helpers.Field, direction byte, m
 		otherLetter = '['
 	}
 
+	if dfWallSearch(position, field, direction, moveFunc) {
+		return false
+	}
+
 	if halfBox != nil {
 		if moveHelper(next, field, direction, moveFunc) && moveHelper(halfBox, field, direction, moveFunc) {
 			field.SetLetter(next, '.')
@@ -100,6 +105,8 @@ func main() {
 	input := &helpers.Field{}
 	input.LoadDataWithPadding(os.Args[1], "#")
 	part2 := CreatePart2(input)
+	input.Contract(1, 1, 1, 1)
+	part2.Contract(1, 1, 2, 2)
 
 	robotPlace := input.FindLetter(input.MakeAllCoords(), '@')
 	robot := helpers.NewFieldIterator(robotPlace[0])
@@ -115,19 +122,16 @@ func main() {
 	}
 	directions := sb.String()
 
-	fmt.Println(directions)
 	for _, dir := range directions {
 		input.SetLetter(robot.Position, '.')
 		robot.Position = Move(robot.Position, input, byte(dir))
 		input.SetLetter(robot.Position, byte(dir))
 	}
-	fmt.Println()
-	input.PrintData()
 
 	part1 := 0
 	boxPlaces := input.FindLetter(input.MakeAllCoords(), 'O')
 	for _, v := range boxPlaces {
-		part1 += (v.Y-1)*100 + v.X - 1
+		part1 += (v.Y)*100 + v.X
 	}
 	fmt.Println("Part1: ", part1)
 
@@ -138,12 +142,16 @@ func main() {
 		robot2.Position = Move(robot2.Position, part2, byte(dir))
 		part2.SetLetter(robot2.Position, byte(dir))
 	}
-	part2.PrintData()
+
+	if err := keyboard.Open(); err != nil {
+		panic(err)
+	}
+	defer keyboard.Close()
 
 	part2result := 0
 	boxPlacesPart2 := part2.FindLetter(part2.MakeAllCoords(), '[')
 	for _, v := range boxPlacesPart2 {
-		part2result += (v.Y-1)*100 + v.X - 2
+		part2result += (v.Y)*100 + v.X
 	}
 	fmt.Println("Part2: ", part2result)
 }

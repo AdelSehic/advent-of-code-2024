@@ -3,9 +3,10 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"image"
+	"image/color"
+	"image/jpeg"
 	"os"
-	"os/exec"
-	// "time"
 
 	"github.com/AdelSehic/advent-of-code-2024/helpers"
 )
@@ -13,8 +14,15 @@ import (
 const (
 	HEIGHT       = 103
 	WIDTH        = 101
+	CELL_SIZE    = 20
 	FIELD_LETTER = ' '
 	ROBOT_LETTER = '#'
+	BACKGROUND_R = 255
+	BACKGROUND_G = 255
+	BACKGROUND_B = 255
+	ROBOT_R      = 0
+	ROBOT_G      = 128
+	ROBOT_B      = 0
 )
 
 func RobotMoveFunc(x, y int) func(*helpers.Coord) *helpers.Coord {
@@ -37,7 +45,6 @@ func MakeRobots(infile string) []*helpers.FieldIterator {
 	for scanner.Scan() {
 		var posX, posY, deltaX, deltaY int
 		fmt.Sscanf(scanner.Text(), "p=%d,%d v=%d,%d", &posX, &posY, &deltaX, &deltaY)
-		fmt.Println(posX, posY, deltaX, deltaY)
 		robot := helpers.NewFieldIterator(&helpers.Coord{X: posX, Y: posY})
 		robot.MoveFunc = RobotMoveFunc(deltaX, deltaY)
 		robots = append(robots, robot)
@@ -63,23 +70,22 @@ func main() {
 
 	fmt.Println("Part1: ", coordinateCount[1]*coordinateCount[2]*coordinateCount[3]*coordinateCount[4])
 
+	// cmd := exec.Command("clear")
+	// cmd.Stdout = os.Stdout
 	for i := 0; true; i++ {
-		emptyField := helpers.GenerateEmptyField(HEIGHT, WIDTH, FIELD_LETTER)
-		cmd := exec.Command("clear")
-		cmd.Stdout = os.Stdout
-		cmd.Run()
 		pos := make(map[helpers.Coord]bool)
+		// emptyField := helpers.GenerateEmptyField(HEIGHT, WIDTH, FIELD_LETTER)
 		for _, robot := range robots {
 			robot.Move()
 			pos[*robot.Position] = true
-			emptyField.SetLetterUnpadded(robot.Position, ROBOT_LETTER)
+			// emptyField.SetLetterUnpadded(robot.Position, ROBOT_LETTER)
 		}
 		if len(pos) == len(robots) {
-			emptyField.PrintData()
-			fmt.Println("Part2 solution : ", i+101)
+			saveGridAsImage(robots, "output.jpg")
+			// emptyField.PrintData()
+			fmt.Println("Part2: ", i+101)
 			break
 		}
-		// time.Sleep(250 * time.Millisecond)
 	}
 }
 
@@ -102,15 +108,34 @@ func DetermineQuadrant(it *helpers.FieldIterator) int {
 	}
 }
 
-func GetQuadrants(field *helpers.Field) (*helpers.Field, *helpers.Field, *helpers.Field, *helpers.Field) {
-	left, right := field.SplitVertically()
+func saveGridAsImage(robots []*helpers.FieldIterator, filename string) error {
+	img := image.NewRGBA(image.Rect(0, 0, WIDTH*CELL_SIZE, HEIGHT*CELL_SIZE))
+	for y := 0; y < HEIGHT*CELL_SIZE; y++ {
+		for x := 0; x < WIDTH*CELL_SIZE; x++ {
+			img.Set(x, y, color.RGBA{BACKGROUND_R, BACKGROUND_G, BACKGROUND_B, 255})
+		}
+	}
 
-	topl, bottoml := left.SplitHorizontally()
-	topr, bottomr := right.SplitHorizontally()
+	for _, robot := range robots {
+		x := robot.Position.X * CELL_SIZE
+		y := robot.Position.Y * CELL_SIZE
+		for dy := 0; dy < CELL_SIZE; dy++ {
+			for dx := 0; dx < CELL_SIZE; dx++ {
+				img.Set(x+dx, y+dy, color.RGBA{ROBOT_R, ROBOT_G, ROBOT_B, 255})
+			}
+		}
+	}
 
-	topl.Contract(0, 1, 0, 1)
-	topr.Contract(0, 1, 0, 0)
-	bottoml.Contract(0, 0, 0, 1)
+	file, err := os.Create(filename)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
 
-	return topl, topr, bottoml, bottomr
+	err = jpeg.Encode(file, img, nil)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

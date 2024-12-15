@@ -5,6 +5,11 @@ const (
 	FACING_DOWN  = "down"
 	FACING_LEFT  = "LEFT"
 	FACING_RIGHT = "RIGHT"
+	LETTER_UP    = '^'
+	LETTER_DOWN  = 'v'
+	LETTER_LEFT  = '<'
+	LETTER_RIGHT = '>'
+	LETTER_NODIR = '@'
 )
 
 type FieldIterator struct {
@@ -82,6 +87,33 @@ func (g *FieldIterator) RotateOther() {
 		g.MoveFunc = (*Coord).Down
 		g.Facing = FACING_DOWN
 	}
+}
+
+func (g *FieldIterator) SetDirection(letter byte) {
+	switch letter {
+	case LETTER_UP:
+		g.Facing = FACING_UP
+	case LETTER_RIGHT:
+		g.Facing = FACING_RIGHT
+	case LETTER_DOWN:
+		g.Facing = FACING_DOWN
+	case LETTER_LEFT:
+		g.Facing = FACING_LEFT
+	}
+}
+
+func (g *FieldIterator) GetDirectionLetter() byte {
+	switch g.Facing {
+	case FACING_UP:
+		return LETTER_UP
+	case FACING_RIGHT:
+		return LETTER_RIGHT
+	case FACING_DOWN:
+		return LETTER_DOWN
+	case FACING_LEFT:
+		return LETTER_DOWN
+	}
+	return LETTER_NODIR
 }
 
 func NewMoveFunc(x, y int) func(*Coord) *Coord {

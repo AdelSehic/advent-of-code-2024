@@ -23,6 +23,9 @@ func (in *Field) LoadDataWithPadding(infile string, paddingChar string) {
 
 	in.Lines = make([]string, 1)
 	for scanner.Scan() {
+		if len(scanner.Text()) == 0 {
+			break
+		}
 		in.Lines = append(in.Lines, strings.Join([]string{paddingChar, scanner.Text(), paddingChar}, ""))
 	}
 	in.Width = len(in.Lines[1])

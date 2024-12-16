@@ -39,6 +39,22 @@ func (in *Field) LoadDataWithPadding(infile string, paddingChar string) {
 	}
 }
 
+func (in *Field) LoadData(infile string) {
+	file, err := os.Open(infile)
+	if err != nil {
+		panic(err)
+	}
+	scanner := bufio.NewScanner(file)
+	in.Lines = make([]string, 0)
+	for scanner.Scan() {
+		if len(scanner.Text()) == 0 {
+			break
+		}
+		in.Lines = append(in.Lines, scanner.Text())
+	}
+	in.Width = len(in.Lines[0])
+}
+
 func GenerateEmptyField(height, widht int, character byte) *Field {
 	f := &Field{}
 	for i := 0; i < height; i++ {

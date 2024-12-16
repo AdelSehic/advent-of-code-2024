@@ -37,6 +37,16 @@ func (g *FieldIterator) Copy() *FieldIterator {
 	}
 }
 
+func (it *FieldIterator) NewCopy() *FieldIterator {
+    newOriginalPos := &Coord{X: it.OriginalPos.X, Y: it.OriginalPos.Y}
+    return &FieldIterator{
+        MoveFunc:    it.MoveFunc,
+        Facing:      it.Facing,
+        Position:    &Coord{X: it.Position.X, Y: it.Position.Y},
+        OriginalPos: newOriginalPos,
+    }
+}
+
 func (g *FieldIterator) Reset() {
 	g.Facing = FACING_UP
 	g.MoveFunc = (*Coord).Up

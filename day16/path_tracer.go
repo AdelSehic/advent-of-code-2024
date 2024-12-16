@@ -1,8 +1,6 @@
 package main
 
 import (
-	"fmt"
-
 	"github.com/AdelSehic/advent-of-code-2024/helpers"
 )
 
@@ -51,7 +49,6 @@ func (pt *PathTracer) Rotate() *PathTracer {
 func (pt *PathTracer) rotateHelper(fn func(*helpers.FieldIterator)) *PathTracer {
 	newPath := pt.Copy()
 	fn(newPath.Iter)
-	newPath.Steps++
 	newPath.Turns++
 	newPath.Path = append(newPath.Path, newPath.Iter.Position)
 	return newPath
@@ -65,6 +62,5 @@ func (pt *PathTracer) Move() {
 
 func (pt *PathTracer) Solution() int {
 	sol := pt.Steps + (pt.Turns * 1000)
-	fmt.Printf("ENDING\r\n-------------------------\r\nSteps: %d, Turns: %d, Solution: %d\r\n", pt.Steps, pt.Turns, sol)
 	return sol
 }

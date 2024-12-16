@@ -12,7 +12,6 @@ import (
 func PathTrace(start, end *helpers.Coord, maze *helpers.Field) []*PathTracer {
 	solutions := make([]*PathTracer, 0)
 	visited := make(map[helpers.Coord]bool)
-	// queue := []*helpers.FieldIterator{helpers.NewFieldIterator(start)}
 	queue := []*PathTracer{NewTracer(start, start)}
 
 	for len(queue) > 0 {
@@ -32,8 +31,6 @@ func PathTrace(start, end *helpers.Coord, maze *helpers.Field) []*PathTracer {
 			}
 
 			current.Move()
-			// maze.PrintData()
-			// time.Sleep(50 * time.Millisecond)
 			if maze.GetLetter(current.Iter.Position) == '#' {
 				break
 			}
@@ -47,54 +44,6 @@ func PathTrace(start, end *helpers.Coord, maze *helpers.Field) []*PathTracer {
 	return solutions
 }
 
-func PathSearch(start, end *helpers.Coord, maze *helpers.Field) {
-	visited := make(map[helpers.Coord]bool)
-	queue := []*helpers.FieldIterator{helpers.NewFieldIterator(start)}
-	queue[0].OriginalPos = &helpers.Coord{X: 0, Y: 1}
-
-	for len(queue) > 0 {
-		current := queue[0]
-		queue = queue[1:]
-
-		for {
-			if visited[*current.Position] {
-				break
-			}
-			visited[*current.Position] = true
-			// maze.SetLetter(current.Position, current.GetDirectionLetter())
-
-			left, right := CheckSides(current, maze)
-			if left {
-				newit := current.NewCopy()
-				newit.RotateOther()
-				newit.Move()
-				newit.OriginalPos.X++
-				newit.OriginalPos.Y++
-				queue = append(queue, newit)
-			}
-			if right {
-				newit := current.NewCopy()
-				newit.Rotate()
-				newit.Move()
-				newit.OriginalPos.X++
-				newit.OriginalPos.Y++
-				queue = append(queue, newit)
-			}
-
-			current.Move()
-			current.OriginalPos.X++
-			if maze.GetLetter(current.Position) == '#' {
-				break
-			}
-			if maze.GetLetter(current.Position) == 'E' {
-				sol := current.OriginalPos.X + (current.OriginalPos.Y * 1000)
-				fmt.Printf("ENDING\r\n-------------------------\r\nSteps: %d, Turns: %d, Solution: %d\r\n", current.OriginalPos.X, current.OriginalPos.Y, sol)
-				break
-			}
-		}
-	}
-}
-
 func main() {
 	timeStart := time.Now()
 	maze := &helpers.Field{}
@@ -103,8 +52,6 @@ func main() {
 	places := maze.ValuePlaces('.', '#')
 	start := places['S'][0]
 	end := places['E'][0]
-
-	// PathSearch(start, end, maze)
 
 	paths := PathTrace(start, end, maze)
 
@@ -123,7 +70,6 @@ func main() {
 		for _, coord := range path.Path {
 			pathfield.SetLetter(coord, 'O')
 		}
-		fmt.Println("----------------------------------------------")
 	}
 	pathfield.PrintData()
 	fmt.Println("BEST SOLUTION", bestSol)

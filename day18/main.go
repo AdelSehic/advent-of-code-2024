@@ -43,12 +43,21 @@ func main() {
 	startPos := &helpers.Coord{X: 1, Y: 1}
 	endPos := &helpers.Coord{X: X_SIZE, Y: Y_SIZE}
 
+	solved := field.Copy()
 	part1 := PathTraceDijkstra(startPos, endPos, field)
 	for _, c := range part1.Path {
-		field.SetLetter(c, 'O')
+		solved.SetLetter(c, 'O')
 	}
-	field.PrintData()
+	solved.PrintData()
 	fmt.Println("Part1 : ", part1.Steps)
+
+	for i := itermax; i < len(corruptions); i++ {
+		field.SetLetter(corruptions[i], '#')
+		if PathTraceDijkstra(startPos, endPos, field) == nil {
+			fmt.Printf("Part2 : %d,%d\r\n", corruptions[i].X-1, corruptions[i].Y-1)
+			break
+		}
+	}
 
 	fmt.Println(time.Since(start))
 }

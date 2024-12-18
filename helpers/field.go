@@ -64,6 +64,17 @@ func GenerateEmptyField(height, widht int, character byte) *Field {
 	return f
 }
 
+func GenerateEmptyFieldPadded(height, widht int, character, pad byte) *Field {
+	f := &Field{}
+	f.Lines = append(f.Lines, strings.Repeat(string(pad), widht+2))
+	for i := 0; i < height; i++ {
+		f.Lines = append(f.Lines, string(pad) + strings.Repeat(string(character), widht) + string(pad))
+	}
+	f.Lines = append(f.Lines, strings.Repeat(string(pad), widht+2))
+	f.Width = widht+2
+	return f
+}
+
 func (in *Field) PrintDebug() {
 	fmt.Println("----------------------------------------------")
 	for _, v := range in.debug {
